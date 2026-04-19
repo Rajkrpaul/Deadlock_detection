@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
-import { supabase, signOut as supabaseSignOut } from '@/lib/auth';
+import { getSupabaseClient, signOut as supabaseSignOut } from '@/lib/auth';
 
 export function useAuth() {
   const router = useRouter();
@@ -11,6 +11,8 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = getSupabaseClient();
+
     // Check if user is logged in on mount
     const checkAuth = async () => {
       try {
