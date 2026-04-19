@@ -10,7 +10,7 @@ import { useChat } from '@/hooks/useChat';
 import { DataInputForm } from '@/components/DataInputForm';
 import { DeadlockResults } from '@/components/DeadlockResults';
 import { DeadlockAssistant } from '@/components/DeadlockAssistant';
-import { LogOut } from 'lucide-react';
+import { LogOut, MessageSquare } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 import type {
@@ -32,7 +32,6 @@ export default function DashboardPage() {
     error: chatError,
     sendMessage,
     initializeChat,
-    resetChat,
   } = useChat();
 
   const [analysis, setAnalysis] = useState<DeadlockAnalysis | null>(null);
@@ -83,7 +82,7 @@ export default function DashboardPage() {
       setAnalysis(data.analysis);
       setResolutions(data.resolutions);
 
-      // Deadlock detected → open assistant
+      // Deadlock detected -> refresh assistant context.
       if (data.analysis.hasDeadlock) {
         const context = {
           deadlockedProcesses: data.analysis.deadlockedProcesses,
@@ -95,10 +94,7 @@ export default function DashboardPage() {
         };
 
         setDeadlockContext(context);
-
-        resetChat();
         initializeChat(context);
-        setAssistantOpen(true);
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -120,16 +116,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 text-foreground">
       {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
               Deadlock Detector
             </h1>
             <p className="text-sm text-muted-foreground">
-              Powered by Groq AI Assistant
+              Analyze system state, visualize cycles, and resolve deadlocks faster.
             </p>
           </div>
 
@@ -141,6 +137,15 @@ export default function DashboardPage() {
               {user?.email}
             </span>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAssistantOpen(true)}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Chat
+            </Button>
+
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -151,10 +156,10 @@ export default function DashboardPage() {
 
       {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(520px,1.1fr)_minmax(0,1.4fr)] gap-8">
           {/* Input */}
-          <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-24 border border-border shadow-sm rounded-xl">
+          <div>
+            <Card className="p-6 sticky top-24 border border-border/80 shadow-sm rounded-xl bg-card/85 backdrop-blur">
               <h2 className="text-lg font-medium mb-6">
                 System Configuration
               </h2>
@@ -163,7 +168,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Results */}
-          <div className="lg:col-span-2">
+          <div>
             {analysis ? (
               <DeadlockResults
                 analysis={analysis}
@@ -172,10 +177,10 @@ export default function DashboardPage() {
             ) : (
               <Card className="p-12 text-center border border-border shadow-sm rounded-xl">
                 <p className="text-muted-foreground mb-4">
-                  Configure your system and click "Analyze for Deadlock"
+                  Configure your system and run a deadlock analysis.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Define processes, resources, allocations, and requests
+                  Add processes, resources, allocations, and requests to get insights.
                 </p>
               </Card>
             )}

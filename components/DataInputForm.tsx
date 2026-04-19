@@ -87,13 +87,23 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
     setRequests(requests.filter((_, i) => i !== idx));
   };
 
+  const sectionCardClass = 'p-5 sm:p-6 border border-border/80 shadow-sm rounded-xl bg-card/80 backdrop-blur';
+  const rowClass = 'grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-2 items-end';
+  const relationRowClass =
+    'grid grid-cols-1 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1.35fr)_84px_36px] gap-2 items-end';
+  const selectClass =
+    'h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]';
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Processes */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Processes</h3>
-          <Button size="sm" onClick={addProcess}>
+      <Card className={sectionCardClass}>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold sm:text-lg">Processes</h3>
+            <p className="text-xs text-muted-foreground">Define runnable units and priority order.</p>
+          </div>
+          <Button size="sm" onClick={addProcess} className="shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Add Process
           </Button>
@@ -101,9 +111,9 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
 
         <div className="space-y-3">
           {processes.map((proc) => (
-            <div key={proc.id} className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="text-sm font-medium">Name</label>
+            <div key={proc.id} className={rowClass}>
+              <div className="sm:col-span-8">
+                <label className="text-xs font-medium text-muted-foreground">Name</label>
                 <Input
                   value={proc.name}
                   onChange={(e) =>
@@ -116,15 +126,17 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                   placeholder="Process name"
                 />
               </div>
-              <div className="w-24">
-                <label className="text-sm font-medium">Priority</label>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-medium text-muted-foreground">Priority</label>
                 <Input
                   type="number"
                   value={proc.priority}
                   onChange={(e) =>
                     setProcesses(
                       processes.map((p) =>
-                        p.id === proc.id ? { ...p, priority: parseInt(e.target.value) } : p
+                        p.id === proc.id
+                          ? { ...p, priority: Number.isNaN(parseInt(e.target.value, 10)) ? 0 : parseInt(e.target.value, 10) }
+                          : p
                       )
                     )
                   }
@@ -134,6 +146,7 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                 variant="ghost"
                 size="sm"
                 onClick={() => removeProcess(proc.id)}
+                className="sm:col-span-1"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -143,10 +156,13 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
       </Card>
 
       {/* Resources */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Resources</h3>
-          <Button size="sm" onClick={addResource}>
+      <Card className={sectionCardClass}>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold sm:text-lg">Resources</h3>
+            <p className="text-xs text-muted-foreground">Define shared resource pools and capacity.</p>
+          </div>
+          <Button size="sm" onClick={addResource} className="shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Add Resource
           </Button>
@@ -154,9 +170,9 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
 
         <div className="space-y-3">
           {resources.map((res) => (
-            <div key={res.id} className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="text-sm font-medium">Name</label>
+            <div key={res.id} className={rowClass}>
+              <div className="sm:col-span-8">
+                <label className="text-xs font-medium text-muted-foreground">Name</label>
                 <Input
                   value={res.name}
                   onChange={(e) =>
@@ -169,15 +185,17 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                   placeholder="Resource name"
                 />
               </div>
-              <div className="w-24">
-                <label className="text-sm font-medium">Instances</label>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-medium text-muted-foreground">Instances</label>
                 <Input
                   type="number"
                   value={res.instances}
                   onChange={(e) =>
                     setResources(
                       resources.map((r) =>
-                        r.id === res.id ? { ...r, instances: parseInt(e.target.value) } : r
+                        r.id === res.id
+                          ? { ...r, instances: Math.max(1, Number.isNaN(parseInt(e.target.value, 10)) ? 1 : parseInt(e.target.value, 10)) }
+                          : r
                       )
                     )
                   }
@@ -187,6 +205,7 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                 variant="ghost"
                 size="sm"
                 onClick={() => removeResource(res.id)}
+                className="sm:col-span-1"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -196,10 +215,13 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
       </Card>
 
       {/* Allocations */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Allocations (currently held)</h3>
-          <Button size="sm" onClick={addAllocation}>
+      <Card className={sectionCardClass}>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold sm:text-lg">Allocations</h3>
+            <p className="text-xs text-muted-foreground">Resources currently held by each process.</p>
+          </div>
+          <Button size="sm" onClick={addAllocation} className="shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Add Allocation
           </Button>
@@ -207,55 +229,65 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
 
         <div className="space-y-3">
           {allocations.map((alloc, idx) => (
-            <div key={idx} className="flex gap-3 items-end">
-              <select
-                value={alloc.processId}
-                onChange={(e) =>
-                  setAllocations(
-                    allocations.map((a, i) =>
-                      i === idx ? { ...a, processId: e.target.value } : a
+            <div key={idx} className={relationRowClass}>
+              <div className="min-w-0">
+                <label className="text-xs font-medium text-muted-foreground">Process</label>
+                <select
+                  value={alloc.processId}
+                  onChange={(e) =>
+                    setAllocations(
+                      allocations.map((a, i) =>
+                        i === idx ? { ...a, processId: e.target.value } : a
+                      )
                     )
-                  )
-                }
-                className="flex-1 px-3 py-2 border border-border rounded-md"
-              >
-                {processes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                  }
+                  className={selectClass}
+                >
+                  {processes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <select
-                value={alloc.resourceId}
-                onChange={(e) =>
-                  setAllocations(
-                    allocations.map((a, i) =>
-                      i === idx ? { ...a, resourceId: e.target.value } : a
+              <div className="min-w-0">
+                <label className="text-xs font-medium text-muted-foreground">Resource</label>
+                <select
+                  value={alloc.resourceId}
+                  onChange={(e) =>
+                    setAllocations(
+                      allocations.map((a, i) =>
+                        i === idx ? { ...a, resourceId: e.target.value } : a
+                      )
                     )
-                  )
-                }
-                className="flex-1 px-3 py-2 border border-border rounded-md"
-              >
-                {resources.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+                  }
+                  className={selectClass}
+                >
+                  {resources.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <div className="w-20">
+              <div className="w-[84px]">
+                <label className="text-xs font-medium text-muted-foreground">Qty</label>
                 <Input
                   type="number"
                   value={alloc.quantity}
                   onChange={(e) =>
                     setAllocations(
                       allocations.map((a, i) =>
-                        i === idx ? { ...a, quantity: parseInt(e.target.value) } : a
+                        i === idx
+                          ? { ...a, quantity: Math.max(1, Number.isNaN(parseInt(e.target.value, 10)) ? 1 : parseInt(e.target.value, 10)) }
+                          : a
                       )
                     )
                   }
                   min="1"
+                  className="text-center font-medium bg-background pr-2"
                 />
               </div>
 
@@ -263,6 +295,7 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                 variant="ghost"
                 size="sm"
                 onClick={() => removeAllocation(idx)}
+                className="w-9 px-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -272,10 +305,13 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
       </Card>
 
       {/* Requests */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Requests (waiting for)</h3>
-          <Button size="sm" onClick={addRequest}>
+      <Card className={sectionCardClass}>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold sm:text-lg">Requests</h3>
+            <p className="text-xs text-muted-foreground">Resources each process is waiting for.</p>
+          </div>
+          <Button size="sm" onClick={addRequest} className="shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Add Request
           </Button>
@@ -283,55 +319,65 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
 
         <div className="space-y-3">
           {requests.map((req, idx) => (
-            <div key={idx} className="flex gap-3 items-end">
-              <select
-                value={req.processId}
-                onChange={(e) =>
-                  setRequests(
-                    requests.map((r, i) =>
-                      i === idx ? { ...r, processId: e.target.value } : r
+            <div key={idx} className={relationRowClass}>
+              <div className="min-w-0">
+                <label className="text-xs font-medium text-muted-foreground">Process</label>
+                <select
+                  value={req.processId}
+                  onChange={(e) =>
+                    setRequests(
+                      requests.map((r, i) =>
+                        i === idx ? { ...r, processId: e.target.value } : r
+                      )
                     )
-                  )
-                }
-                className="flex-1 px-3 py-2 border border-border rounded-md"
-              >
-                {processes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                  }
+                  className={selectClass}
+                >
+                  {processes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <select
-                value={req.resourceId}
-                onChange={(e) =>
-                  setRequests(
-                    requests.map((r, i) =>
-                      i === idx ? { ...r, resourceId: e.target.value } : r
+              <div className="min-w-0">
+                <label className="text-xs font-medium text-muted-foreground">Resource</label>
+                <select
+                  value={req.resourceId}
+                  onChange={(e) =>
+                    setRequests(
+                      requests.map((r, i) =>
+                        i === idx ? { ...r, resourceId: e.target.value } : r
+                      )
                     )
-                  )
-                }
-                className="flex-1 px-3 py-2 border border-border rounded-md"
-              >
-                {resources.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+                  }
+                  className={selectClass}
+                >
+                  {resources.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <div className="w-20">
+              <div className="w-[84px]">
+                <label className="text-xs font-medium text-muted-foreground">Qty</label>
                 <Input
                   type="number"
                   value={req.quantity}
                   onChange={(e) =>
                     setRequests(
                       requests.map((r, i) =>
-                        i === idx ? { ...r, quantity: parseInt(e.target.value) } : r
+                        i === idx
+                          ? { ...r, quantity: Math.max(1, Number.isNaN(parseInt(e.target.value, 10)) ? 1 : parseInt(e.target.value, 10)) }
+                          : r
                       )
                     )
                   }
                   min="1"
+                  className="text-center font-medium bg-background pr-2"
                 />
               </div>
 
@@ -339,6 +385,7 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
                 variant="ghost"
                 size="sm"
                 onClick={() => removeRequest(idx)}
+                className="w-9 px-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -351,7 +398,7 @@ export function DataInputForm({ onAnalyze, loading = false }: DataInputFormProps
       <Button
         onClick={handleAnalyze}
         disabled={loading}
-        className="w-full"
+        className="w-full h-11 text-sm font-semibold shadow-sm"
         size="lg"
       >
         {loading ? 'Analyzing...' : 'Analyze for Deadlock'}

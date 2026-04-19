@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/auth';
 import { analyzeDeadlock, chatWithAssistant, type DeadlockContext } from '@/lib/groq';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const rawBody = await request.text();
+    let parsedBody: {
+      message?: string;
+      conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
+      deadlockContext?: DeadlockContext | null;
+    };
 
-    if (!session) {
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch (parseError) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        {
+          error: 'Invalid JSON body',
+          details: parseError instanceof Error ? parseError.message : 'Unknown parse error',
+        },
+        { status: 400 }
       );
     }
 
-    const { message, conversationHistory, deadlockContext } = await request.json();
+    const { message, conversationHistory, deadlockContext } = parsedBody;
 
     if (!message) {
       return NextResponse.json(
@@ -31,6 +37,7 @@ export async function POST(request: NextRequest) {
     if (deadlockContext) {
       response = await analyzeDeadlock(
         deadlockContext as DeadlockContext,
+        message,
         conversationHistory || []
       );
     } else {
@@ -42,7 +49,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(
-      { error: 'Failed to process chat request' },
+      process.env.NODE_ENV === 'development'
+        ? {
+            error: 'Failed to process chat request',
+            details: error instanceof Error ? error.message : 'Unknown error',
+          }
+        : { error: 'Failed to process chat request' },
       { status: 500 }
     );
   }

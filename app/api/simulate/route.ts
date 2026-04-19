@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/auth';
 import { detectDeadlock, simulateProcessRemoval } from '@/lib/algorithms';
 import type { Process, Resource, Allocation, Request as DeadlockRequest } from '@/lib/algorithms';
 
 export async function POST(request: NextRequest) {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const {
       processes,
       resources,

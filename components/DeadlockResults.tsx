@@ -16,7 +16,7 @@ export function DeadlockResults({ analysis, resolutions }: DeadlockResultsProps)
     <div className="space-y-6">
 
       {/* 🔥 GRAPH VISUALIZATION (ADDED HERE) */}
-      <Card className="p-4 border border-border shadow-sm rounded-xl">
+      <Card className="rounded-xl border border-border/80 bg-card/85 p-4 shadow-sm backdrop-blur">
         <h3 className="text-lg font-semibold mb-4">System Graph</h3>
         <DeadlockGraph analysis={analysis} />
       </Card>
@@ -41,14 +41,14 @@ export function DeadlockResults({ analysis, resolutions }: DeadlockResultsProps)
       {/* Deadlock Details */}
       {analysis.hasDeadlock && (
         <>
-          <Card className="p-6 border border-border shadow-sm rounded-xl">
+          <Card className="rounded-xl border border-border/80 bg-card/85 p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Deadlock Cycles</h3>
 
             <div className="space-y-4">
               {analysis.cycleDetails.map((detail, idx) => (
                 <div
                   key={idx}
-                  className="p-4 bg-muted rounded-lg border border-border"
+                  className="rounded-lg border border-border/80 bg-muted/60 p-4"
                 >
                   <p className="font-mono text-sm font-semibold mb-2">
                     Cycle {idx + 1}:
@@ -69,7 +69,7 @@ export function DeadlockResults({ analysis, resolutions }: DeadlockResultsProps)
           </Card>
 
           {/* Resolution Strategies */}
-          <Card className="p-6 border border-border shadow-sm rounded-xl">
+          <Card className="rounded-xl border border-border/80 bg-card/85 p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4">
               Resolution Strategies
             </h3>
@@ -78,7 +78,7 @@ export function DeadlockResults({ analysis, resolutions }: DeadlockResultsProps)
               {resolutions.map((strategy, idx) => (
                 <div
                   key={idx}
-                  className="border border-border rounded-lg p-4 hover:shadow-md transition"
+                  className="rounded-lg border border-border/80 p-4 transition hover:shadow-md"
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-1">

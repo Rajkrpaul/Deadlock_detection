@@ -74,42 +74,19 @@ Please analyze this deadlock situation and provide resolution recommendations.
 
 export async function analyzeDeadlock(
   context: DeadlockContext,
-  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
-) {
-  const contextMessage = formatDeadlockContextForAgent(context);
-  
-  const messages: Groq.Messages.MessageParam[] = [
-    ...conversationHistory.map((msg) => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-    })),
-  ];
-
-  // Add context as first user message if it's the first turn
-  if (messages.length === 0) {
-    messages.push({
-      role: 'user',
-      content: contextMessage,
-    });
-  }
-
-  const response = await groq.messages.create({
-    model: 'mixtral-8x7b-32768',
-    max_tokens: 1024,
-    system: DEADLOCK_ASSISTANT_SYSTEM_PROMPT,
-    messages: messages,
-  });
-
-  return response.content[0].type === 'text' ? response.content[0].text : '';
-}
-
-export async function chatWithAssistant(
   userMessage: string,
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
 ) {
-  const messages: Groq.Messages.MessageParam[] = [
+  const contextMessage = formatDeadlockContextForAgent(context);
+
+  const messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }> = [
+    { role: 'system', content: DEADLOCK_ASSISTANT_SYSTEM_PROMPT },
+    { role: 'system', content: contextMessage },
     ...conversationHistory.map((msg) => ({
-      role: msg.role as 'user' | 'assistant',
+      role: msg.role,
       content: msg.content,
     })),
     {
@@ -118,12 +95,39 @@ export async function chatWithAssistant(
     },
   ];
 
-  const response = await groq.messages.create({
-    model: 'mixtral-8x7b-32768',
+  const response = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
     max_tokens: 1024,
-    system: DEADLOCK_ASSISTANT_SYSTEM_PROMPT,
-    messages: messages,
+    messages,
   });
 
-  return response.content[0].type === 'text' ? response.content[0].text : '';
+  return response.choices[0]?.message?.content ?? '';
+}
+
+export async function chatWithAssistant(
+  userMessage: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
+) {
+  const messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }> = [
+    { role: 'system', content: DEADLOCK_ASSISTANT_SYSTEM_PROMPT },
+    ...conversationHistory.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
+    {
+      role: 'user',
+      content: userMessage,
+    },
+  ];
+
+  const response = await groq.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    max_tokens: 1024,
+    messages,
+  });
+
+  return response.choices[0]?.message?.content ?? '';
 }

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/auth';
+import { createClient } from '@/lib/supabaseServer';
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -65,6 +66,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -108,6 +110,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
