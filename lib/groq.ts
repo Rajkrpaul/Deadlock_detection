@@ -1,12 +1,14 @@
 import Groq from 'groq-sdk';
 
-const groqApiKey = process.env.GROQ_API_KEY;
+function getGroqClient() {
+  const groqApiKey = process.env.GROQ_API_KEY;
 
-if (!groqApiKey) {
-  throw new Error('Missing GROQ_API_KEY environment variable');
+  if (!groqApiKey) {
+    throw new Error('Missing GROQ_API_KEY environment variable');
+  }
+
+  return new Groq({ apiKey: groqApiKey });
 }
-
-export const groq = new Groq({ apiKey: groqApiKey });
 
 export const DEADLOCK_ASSISTANT_SYSTEM_PROMPT = `You are an expert Operating Systems analyst specializing in deadlock detection and resolution. Your role is to:
 
@@ -95,6 +97,7 @@ export async function analyzeDeadlock(
     },
   ];
 
+  const groq = getGroqClient();
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     max_tokens: 1024,
@@ -123,6 +126,7 @@ export async function chatWithAssistant(
     },
   ];
 
+  const groq = getGroqClient();
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     max_tokens: 1024,
