@@ -85,31 +85,32 @@ const SCENARIOS = {
     ],
   },
   'Star Deadlock': {
-    description: '4 processes all waiting on a single shared resource',
+    description: 'Multiple processes all blocked waiting on a single central shared resource (R1)',
     tag: 'deadlock' as const,
     processes: [
       { id: 'P1', name: 'P1', priority: 1, status: 'running' as const },
       { id: 'P2', name: 'P2', priority: 1, status: 'running' as const },
       { id: 'P3', name: 'P3', priority: 1, status: 'running' as const },
-      { id: 'P4', name: 'P4', priority: 1, status: 'running' as const },
     ],
     resources: [
       { id: 'R1', name: 'R1', instances: 1 },
       { id: 'R2', name: 'R2', instances: 1 },
       { id: 'R3', name: 'R3', instances: 1 },
-      { id: 'R4', name: 'R4', instances: 1 },
     ],
     allocations: [
+      // P1 holds R1 (the central hub resource)
       { processId: 'P1', resourceId: 'R1', quantity: 1 },
+      // P2 holds R2, P3 holds R3 (spokes)
       { processId: 'P2', resourceId: 'R2', quantity: 1 },
       { processId: 'P3', resourceId: 'R3', quantity: 1 },
-      { processId: 'P4', resourceId: 'R4', quantity: 1 },
     ],
     requests: [
+      // P1 (holds R1) wants R2 → blocked by P2
       { processId: 'P1', resourceId: 'R2', quantity: 1 },
-      { processId: 'P2', resourceId: 'R3', quantity: 1 },
-      { processId: 'P3', resourceId: 'R4', quantity: 1 },
-      { processId: 'P4', resourceId: 'R1', quantity: 1 },
+      // P2 (holds R2) wants R1 → blocked by P1 — deadlock core
+      { processId: 'P2', resourceId: 'R1', quantity: 1 },
+      // P3 (holds R3) also wants R1 → also blocked by P1 — star spoke
+      { processId: 'P3', resourceId: 'R1', quantity: 1 },
     ],
   },
   'Double Deadlock': {
@@ -408,7 +409,7 @@ export default function DashboardPage() {
     setAppliedFix(null);
     stopSimulation();
     const s = SCENARIOS[key];
-    await handleAnalyze(s.processes, s.resources, s.allocations, s.requests);
+    await handleAnalyze([...s.processes], [...s.resources], [...s.allocations], [...s.requests]);
   };
 
   /* ── Apply Fix ── */
